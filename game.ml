@@ -4,6 +4,8 @@ open Gamebase
 
 type state = { cards_P1: List int*Player ;
                cards_P2: List int*Player ;
+			   played_card_P1: int*Player;
+			   played_card_P2: int*Player;
                pts_P1: int*Player        ;
                pts_P2: int*Player        ;
                p : Player                ;
@@ -55,9 +57,38 @@ let is_valid s m =
 
 
 (*supprime m de la liste de s et change le joueur *)
-let play s m = if is_valid s m then 
-    let (a,b) = s in (a+m, (next b)) else
-    failwith "move not possible";;
+let play s m = 
+	if is_valid s m then 
+
+		let rec remove x acc = function 
+			| [] -> acc		
+			| [h|tl] -> (if x=h then 
+							remove x acc::tl tl
+						else 
+							remove x acc::h::tl tl
+						)
+		in
+
+		let (liste_card_p1,p1)=s.cards_P1 in 
+	  	let (liste_card_p2,p2)=s.cards_P2 in
+		let (played_card_p1,a)=s.played_card_P1 in 
+
+
+	  	let list_pl = if p1=s.p then liste_card_p1 else liste_card_p2 in 
+	    let new_cards = ((remove m [] list_pl),s.p) in 
+		let played_card = (m,s.p) in
+		
+		let eor = if s.end_of_round=1 then 0 else 1 in 
+		let new_player = turn s in 
+
+		if s.end_of_round=1 then 
+			let (played_card_p1,a)=s.played_card_P1 in 
+				if played_card>played_card_p1 then 
+				
+
+
+	else
+	    failwith "move not possible";;
 
 (*retourne la liste de s*)
 let all_moves s = [1;2;3];;

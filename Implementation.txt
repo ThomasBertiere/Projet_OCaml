@@ -28,7 +28,13 @@ type state = {  cards_P1 : list int * player ;
 type move = int  
 
 ====Player's result====
-type result = Win of player
+type result = Win of player | Egality
+
+
+====A FAIRE====
+initial
+state2s
+
 
 
 
