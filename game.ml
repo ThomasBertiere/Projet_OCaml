@@ -2,16 +2,17 @@ open Gamebase
 
 (* These types are abstract in game.mli *)
 
-type state = { mutable cards_P1: List int*Player ;
-					mutable cards_P2: List int*Player ;
-					mutable pts_P1: int*Player ;
-					mutable pts_P2: int*Player ;
-					mutable p : Player ;
-					mutable end_of_round : int ; }
+type state = { cards_P1: List int*Player ;
+               cards_P2: List int*Player ;
+               pts_P1: int*Player        ;
+               pts_P2: int*Player        ;
+               p : Player                ;
+               end_of_round : int        ; 
+             };;
 
-type move = int (*joue une carte, donc un int*)
+type move = int (*joue une carte, donc un int*) ;;
 
-type result = Win of player
+type result = Win of player | Egality ;;
 
 
 (* Printers *)
@@ -30,36 +31,28 @@ let readmove s = try Some (int_of_string s) with _ -> None
 (* faire un truc random*)
 let initial =  ;;
 
-(*en cours*)
-let turn s = match s with 
-	| { end_of_round=1} -> { s with end_of_round=0}  
-	| { end_of_round=0} -> { s with p = next (p), end_of_round=1}
+
+let turn state = match s with 
+  | { end_of_round=1} -> state.p 
+  | { end_of_round=0} -> next (state.p)
+  | {_} -> failwith "Error turn"
 
 
 
+let is_valid s m =
 
+  let rec member x = function 
+    | [] -> false 
+    | [h|tl] -> if h=x then true else member x tl 
+  in 
+  let (liste_card_p1,p1)=s.cards_P1 in 
+  let (liste_card_p2,p2)=s.cards_P2 in
+  let list_pl = if p1=s.p then liste_card_p1 else liste_card_p2 in
+  let in_hand=member m list_pl in 
+  let sc_p1=s.score_P1 in
+  let sc_p2=s.score_P2 in 
+    not (liste_card_p1=[] and liste_card_p2=[]) and sc_p2<=13 and sc_p1<=13 and in_hand;;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(*vérifier que m est dans la liste de s et score<=13*)
-let is_valid s m = 
-  let (a,b) = s in 
-    if 0<=m && m<=3 && a<20 then true else false  ;; 
 
 (*supprime m de la liste de s et change le joueur *)
 let play s m = if is_valid s m then 
@@ -78,7 +71,7 @@ let result s = let (a,b) = s in
 type comparison = Equal | Greater | Smaller;;
 
 let compare p r1 r2 = match (r1,r2) with 
-| (Win (x),Win (z)) -> if x=z then Equal else if (x=p) then Greater else if (z=p) then Smaller else failwith "pb" ;;
+  | (Win (x),Win (z)) -> if x=z then Equal else if (x=p) then Greater else if (z=p) then Smaller else failwith "pb" ;;
 
 let worst_for p = Win ((next p));;
 
