@@ -80,7 +80,7 @@ type state = { cards_P1: int list*player  ;
 
 type move = int (*joue une carte, donc un int*) ;;
 
-type result = Win of player | Egality ;;
+type result = Win of player*int | Egality ;;
 
 
 (* Printers *)
@@ -106,7 +106,7 @@ let state2s s =
 let move2s n = Printf.sprintf " Joue : %d" n 
 
 let result2s = function 
-  | Win (p) -> (player2s p) ^ " wins"
+  | Win (pl,pts) -> (player2s pl) ^ " wins with "^string_of_int(pts)^" points" 
   | Egality -> "Egality"
 
 
@@ -161,7 +161,33 @@ let is_valid s m =
   let in_hand=member m list_pl in 
   let sc_p1,a=s.pts_P1 in
   let sc_p2,a=s.pts_P2 in 
-    (not(liste_card_p1=[] && liste_card_p2=[])) && sc_p2<=13 && sc_p1<=13 && in_hand
+    (not(liste_card_p1=[] && liste_card_p2=[])) && sc_p2<=13 && sc_p1<=13 && in_hand;;
+
+
+let all_moves s =
+  let (liste_card_p1,p1)=s.cards_P1 in 
+  let (liste_card_p2,p2)=s.cards_P2 in
+    if p1=s.p then liste_card_p1 else liste_card_p2;;
+
+let result s = 
+  let (pts_p1,p1)=s.pts_P1 in
+  let (pts_p2,p2)=s.pts_P2 in 
+    if pts_p1>=14 then Some (Win (p1,pts_p1)) else
+    if pts_p2>=14 then Some (Win (p2,pts_p2)) else
+    if pts_p1=13 && pts_p2=13 then Some (Egality) else None ;;
+
+type comparison = Equal | Greater | Smaller ;;
+
+let compare pl resul1 resul2 = match (resul1,resul2) with 
+  | (Win (p1,pts1),Win (p2,pts2)) -> 
+      if pts2=pts1 then Equal else 
+      if p2=pl && pts2>pts1 then Greater else
+      if p2=pl && pts2<pts1 then Smaller else 
+      if p1=pl && pts1>pts2 then Greater else
+      if p1=pl && pts1<pts2 then Smaller else
+        failwith "Probleme de compare" 
+  | (Egality,Egality) -> Equal 
+
 
 (* ########################### TEST #####################*)
 
@@ -198,12 +224,34 @@ let state_test3={
   end_of_round=1                           ; 
 };;
 
+let state_test4={
+  cards_P1=[1;2;3;4;5;6;7;8;9],Human       ;
+  cards_P2=[],Comput                       ;
+  played_card_P1=2,Human                   ;
+  played_card_P2=3,Comput                  ;
+  pts_P1=1,Human                          ;
+  pts_P2=17,Comput                         ;
+  p=Comput                                 ; 
+  end_of_round=1                           ; 
+};;
+
+let state_test5={
+  cards_P1=[1;2;3;4;5;6;7;8;9],Human       ;
+  cards_P2=[],Comput                       ;
+  played_card_P1=2,Human                   ;
+  played_card_P2=3,Comput                  ;
+  pts_P1=13,Human                          ;
+  pts_P2=13,Comput                         ;
+  p=Comput                                 ; 
+  end_of_round=1                           ; 
+};;
+
 (* Print a state *)
 Printf.printf "%s%!\n" (state2s state_test);;      (*########### OK ############*)
 (* Print a move *)
 Printf.printf "%s%!\n" (move2s 3);;                (*########### OK ############*)
 (* Print a result *)
-Printf.printf "%s%!\n" (result2s (Win (Human)));;  (*########### OK ############*)
+Printf.printf "%s%!\n" (result2s (Win (Human,15)));;  (*########### OK ############*)
 Printf.printf "%s%!\n" (result2s Egality);;        (*########### OK ############*)
 (* initialization test *)
 Printf.printf "%s%!\n" (state2s initial);;         (*########### OK ############*)
@@ -215,8 +263,21 @@ is_valid state_test 1;;                            (*########### OK ############
 is_valid state_test 10;;                           (*########### OK ############*)
 is_valid state_test2 1;;                           (*########### OK ############*)
 is_valid state_test3 1;;                           (*########### OK ############*)
-
-
-
-
-
+(* all_moves test *)
+all_moves state_test;;                             (*########### OK ############*)
+all_moves state_test3;;                            (*########### OK ############*)
+(* result test *)
+let test_result s= match result s with 
+  | None -> Printf.printf "Pas de resultat%!\n"
+  | Some (x) -> Printf.printf "%s%!\n" (result2s x);;
+test_result state_test5;                           (*########### OK ############*)
+test_result state_test4;                           (*########### OK ############*)
+test_result state_test3;                           (*########### OK ############*)
+test_result state_test;;                           (*########### OK ############*)
+(* compare test *)
+compare Comput (Win (Comput,15)) (Win (Human,17));;(*########### OK ############*)
+compare Comput (Win (Human,13)) (Win (Comput,13));;(*########### OK ############*)
+compare Comput (Win (Human,1)) (Win (Comput,13));; (*########### OK ############*)
+compare Human (Win (Comput,13)) (Win (Human,15));; (*########### OK ############*)
+compare Human (Win (Comput,13)) (Win (Human,1));;  (*########### OK ############*)
+compare Human (Egality) (Egality);;                (*########### OK ############*)
