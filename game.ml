@@ -20,7 +20,7 @@ type state = { cards_P1: int list*player  ;
 type move = int 
 
 (*The type result is the player victory with his score or an egality *)
-type result = Win of player*int | Egality 
+type result = Win of player | Egality 
 
 (* Type used to compare results *)
 type comparison = Equal | Greater | Smaller ;;
@@ -53,9 +53,8 @@ let move2s n = Printf.sprintf " Joue : %d" n
 
 (*convert a result in string*)
 let result2s = function 
-  | Win (pl,pts) -> (player2s pl) ^ " wins with "^string_of_int(pts)^" points" 
+  | Win (pl) -> (player2s pl) ^ " wins" 
   | Egality -> "Egality"
-
 
 
 (*############################### READERS ###############################*)
@@ -104,8 +103,6 @@ let initial =
     };;
 
 
-
-(*MMMMMODUF*)
 (* Indicates which player must play now. *)
 let turn state = state.p
 
@@ -125,9 +122,6 @@ let is_valid s m =
     (not(liste_card_p1=[] && liste_card_p2=[])) && sc_p2<=13 && sc_p1<=13 && in_hand;;
 
 
-
-
-(*MMMMODOIF*)
 (* Play a move *)
 let play s m = 
   if is_valid s m then 
@@ -147,14 +141,13 @@ let play s m =
       let (score_P2,p2)=s.pts_P2 in 
 
 
-
       let new_cards_p1 = if s.p=p1 then ((remove m liste_card_p1),p1) else s.cards_P1 in
       let new_cards_p2 = if s.p=p2 then ((remove m liste_card_p2),p2) else s.cards_P2 in
       let new_played_card_P1 = if s.p=p1 then (m,p1) else s.played_card_P1 in
       let new_played_card_P2 = if s.p=p2 then (m,p2) else s.played_card_P2 in
-(*faut modifier les 2 dernière ligne, prendre en compte la nouvelle carte jouée*)
-      let new_pts_P1 = if (s.end_of_round=1 && (played_card_p1>played_card_p2 || (played_card_p1=played_card_p2 && s.p=p2)))  then ((score_P1+1),p1) else s.pts_P1 in
-      let new_pts_P2 = if (s.end_of_round=1 && (played_card_p2>played_card_p1 || (played_card_p1=played_card_p2 && s.p=p2)))  then ((score_P2+1),p2) else s.pts_P2 in
+      (*faut modifier les 2 dernière ligne, prendre en compte la nouvelle carte jouée*)
+      let new_pts_P1 = if (s.end_of_round=1 && ( (played_card_p1>m && s.p=p2) || (m>played_card_p2 && s.p=p1) || (played_card_p1=m && s.p=p2) ) ) then ((score_P1+1),p1) else s.pts_P1 in
+      let new_pts_P2 = if (s.end_of_round=1 && ( (m>played_card_p1 && s.p=p2) || (played_card_p2>m && s.p=p1) || (played_card_p2=m && s.p=p1))) then ((score_P2+1),p2) else s.pts_P2 in
       let new_pl = if (s.end_of_round=1) then s.p else next s.p in 
       let new_end_of_round = if (s.end_of_round=1) then 0 else 1 in 
 
@@ -166,8 +159,8 @@ let play s m =
          pts_P2=new_pts_P2;
          p=new_pl;
          end_of_round=new_end_of_round})
-else 
-	failwith "Play not possible"
+  else 
+    	failwith "Play not possible"
 
 (* return all the possible move considering a state*)
 let all_moves s =
@@ -179,22 +172,20 @@ let all_moves s =
 let result s = 
   let (pts_p1,p1)=s.pts_P1 in
   let (pts_p2,p2)=s.pts_P2 in 
-    if pts_p1>=14 then Some (Win (p1,pts_p1)) else
-    if pts_p2>=14 then Some (Win (p2,pts_p2)) else
+    if pts_p1>=14 then Some (Win (p1)) else
+    if pts_p2>=14 then Some (Win (p2)) else
     if pts_p1=13 && pts_p2=13 then Some (Egality) else None ;;
 
 (*function which compare 2 results on the player pl point of view *)
 let compare pl resul1 resul2 = match (resul1,resul2) with 
-  | (Win (p1,pts1),Win (p2,pts2)) -> 
-      if pts2=pts1 then Equal else 
-      if p2=pl && pts2>pts1 then Greater else
-      if p2=pl && pts2<pts1 then Smaller else 
-      if p1=pl && pts1>pts2 then Greater else
-      if p1=pl && pts1<pts2 then Smaller else
-        failwith "Compare problem" 
+  | (Win (p1),Win (p2)) -> 
+      (if p2=p1 && p1=pl then Equal else 
+       if p2=pl then Greater else
+       if p1=pl then Smaller else failwith "Compare problem" )
   | (Egality,Egality) -> Equal 
-  | (_,_) -> failwith "Compare problem"  
+  | (Win(p1),Egality) -> if p1=pl then Smaller else failwith "Compare problem"  
+  | (Egality,Win(p1)) -> if p1=pl then Greater else failwith "Compare problem"  
 
 (* Returns the worst possible score for the given player*)
-let worst_for p = Win ((next p),14);;
+let worst_for p = Win (next p);;
 
