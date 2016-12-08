@@ -19,14 +19,15 @@ let ask_move state =
         None
       end
     else Some mov
-
+(*###################### IA ###########################*)
+(*You have to decomment all this to play vs the computer*)
 (* Get the move from the IA. *)
 let ia_move state =
   let (mov, _) = Game_ia.best_move state in
   match mov with
   | None -> assert false
   | Some m -> m
-  
+
 (*** Each player in turn. ***)
     
 let rec run with_ia state =
@@ -55,4 +56,4 @@ let rec run with_ia state =
     run with_ia state'
 
 
-let () = run true initial
+let () = run false initial

@@ -143,11 +143,11 @@ let initial =
 
 
 
-let turn state = match state with 
-  | { end_of_round=1} -> state.p 
-  | { end_of_round=0} -> next (state.p)
-  | _ -> failwith "Error turn"
-
+let turn state =s.p(* match state with 
+                      | { end_of_round=1} -> state.p 
+                      | { end_of_round=0} -> next (state.p)
+                      | _ -> failwith "Error turn"
+                   *)
 
 
 let is_valid s m =
@@ -185,11 +185,146 @@ let compare pl resul1 resul2 = match (resul1,resul2) with
       if p2=pl && pts2<pts1 then Smaller else 
       if p1=pl && pts1>pts2 then Greater else
       if p1=pl && pts1<pts2 then Smaller else
-        failwith "Probleme de compare" 
+        failwith "Compare problem" 
   | (Egality,Egality) -> Equal 
+  | (_,_) -> failwith "Compare problem"  
 
 
-(* ########################### TEST #####################*)
+(* Play a move *)
+let play s m = 
+  if is_valid s m then 
+    ((*Remove a card from the P1 or P2 cards*)
+      let rec remove x = function 
+        | [] -> []		
+        | h::tl -> if x=h then tl else h::(remove (x) (tl))
+      in
+      (*Get cards of P1 and P2*)
+      let (liste_card_p1,p1)=s.cards_P1 in 
+      let (liste_card_p2,p2)=s.cards_P2 in
+      (*Get the last card played by P1 and P2*)
+      let (played_card_p1,p1)=s.played_card_P1 in 
+      let (played_card_p2,p2)=s.played_card_P2 in 
+      (*Get scores*)
+      let (score_P1,p1)=s.pts_P1 in
+      let (score_P2,p2)=s.pts_P2 in 
+
+
+
+      let new_cards_p1 = if s.p=p1 then ((remove m liste_card_p1),p1) else s.cards_P1 in
+      let new_cards_p2 = if s.p=p2 then ((remove m liste_card_p2),p2) else s.cards_P2 in
+      let new_played_card_P1 = if s.p=p1 then (m,p1) else s.played_card_P1 in
+      let new_played_card_P2 = if s.p=p2 then (m,p2) else s.played_card_P2 in
+      let new_pts_P1 = if (s.end_of_round=1 && (played_card_p1>played_card_p2 || (played_card_p1=played_card_p2 && s.p=p2)))  then ((score_P1+1),p2) else s.pts_P1 in
+      let new_pts_P2 = if (s.end_of_round=1 && (played_card_p2>played_card_p1 || (played_card_p1=played_card_p2 && s.p=p2)))  then ((score_P2+1),p2) else s.pts_P2 in
+      let new_pl = if (s.end_of_round=1) then s.p else next s.p in 
+      let new_end_of_round = if (s.end_of_round=1) then 0 else 1 in 
+
+        {cards_P1=new_cards_p1;
+         cards_P2=new_cards_p2;
+         played_card_P1=new_played_card_P1;
+         played_card_P2=new_played_card_P2;
+         pts_P1=new_pts_P1;
+         pts_P2=new_pts_P2;
+         p=new_pl;
+         end_of_round=new_end_of_round})
+  else 
+    	failwith "Play not possible"
+ 	(*
+let play s m = 
+if is_valid s m then 
+((*Remove a card from the P1 or P2 cards*)
+let rec remove x = function 
+| [] -> []		
+| h::tl -> if x=h then remove (x) (tl) else h::(remove (x) (tl))
+in
+(*Get cards P1 and P2*)
+let (liste_card_p1,p1)=s.cards_P1 in 
+let (liste_card_p2,p2)=s.cards_P2 in
+(*Get the last card played by P1 or P2*)
+let (played_card_p1,a)=s.played_card_P1 in 
+let (played_card_p2,a)=s.played_card_P2 in 
+(*Get scores*)
+let (score_P1,p1)=s.pts_P1 in
+let (score_P2,p2)=s.pts_P2 in 
+(*Get the cards of the player P*)
+let list_pl = if p1=s.p then liste_card_p1 else liste_card_p2 in
+(*Get the score of the player P*)
+let score_pl = if p1=s.p then score_P1 else score_P2 in 
+
+(*Remove the card played*)
+let new_cards = ((remove m list_pl),s.p) in 
+(*Card played*)
+let played_card = (m,s.p) in
+let eor = if s.end_of_round=1 then 0 else 1 in 
+(*Get the next player*)
+let next_player = turn s in
+
+if p1=s.p then 
+(if s.end_of_round=1 then 
+(if m>played_card_p2 then 
+let new_score_P1=score_P1+1 in
+{cards_P1=new_cards;
+cards_P2=liste_card_p2,p2;
+played_card_P1=played_card;
+played_card_P2=played_card_p2,p2;
+pts_P1=new_score_P1,p1;
+pts_P2=score_P2,p2;
+p=next_player;
+end_of_round=eor}
+else
+let new_score_P2=score_P2+1 in
+{cards_P1=new_cards;
+cards_P2=liste_card_p2,p2;
+played_card_P1=played_card;
+played_card_P2=played_card_p2,p2;
+pts_P1=score_P1,p1;
+pts_P2=new_score_P2,p2;
+p=next_player;
+end_of_round=eor})
+else
+{cards_P1=new_cards;
+cards_P2=liste_card_p2,p2;
+played_card_P1=played_card;
+played_card_P2=played_card_p2,p2;
+pts_P1=score_P1,p1;
+pts_P2=score_P2,p2;
+p=next_player;
+end_of_round=eor})
+else
+(if s.end_of_round=1 then 
+(if m>played_card_p1 then 
+let new_score_P2=score_P2+1 in 
+{cards_P1=liste_card_p1,p1;
+cards_P2=new_cards;
+played_card_P1=played_card_p1,p1;
+played_card_P2=played_card;
+pts_P1=score_P1,p1;
+pts_P2=new_score_P2,p2;
+p=next_player;
+end_of_round=eor}
+else
+let new_score_P1=score_P1+1 in
+{cards_P1=liste_card_p1,p1;
+cards_P2=new_cards;
+played_card_P1=played_card_p1,p1;
+played_card_P2=played_card;
+pts_P1=new_score_P1,p1;
+pts_P2=score_P2,p1;
+p=next_player;
+end_of_round=eor})
+else
+{cards_P1=liste_card_p1,p1;
+cards_P2=new_cards;
+played_card_P1=played_card_p1,p1;
+played_card_P2=played_card;
+pts_P1=score_P1,p1;
+pts_P2=score_P2,p2;
+p=next_player;
+end_of_round=eor}))
+else
+failwith "move not possible";;
+*)
+(* ########################### TESTS ##############################*)
 
 let state_test={
   cards_P1=[1;2;3;4;5;6;7;8;9],Human       ;
@@ -199,7 +334,7 @@ let state_test={
   pts_P1=8,Human                           ;
   pts_P2=10,Comput                         ;
   p=Human                                  ; 
-  end_of_round=1                           ; 
+  end_of_round=0                           ; 
 };;
 
 let state_test2={
@@ -229,7 +364,7 @@ let state_test4={
   cards_P2=[],Comput                       ;
   played_card_P1=2,Human                   ;
   played_card_P2=3,Comput                  ;
-  pts_P1=1,Human                          ;
+  pts_P1=1,Human                           ;
   pts_P2=17,Comput                         ;
   p=Comput                                 ; 
   end_of_round=1                           ; 
@@ -268,7 +403,7 @@ all_moves state_test;;                             (*########### OK ############
 all_moves state_test3;;                            (*########### OK ############*)
 (* result test *)
 let test_result s= match result s with 
-  | None -> Printf.printf "Pas de resultat%!\n"
+  | None -> Printf.printf "No result%!\n"
   | Some (x) -> Printf.printf "%s%!\n" (result2s x);;
 test_result state_test5;                           (*########### OK ############*)
 test_result state_test4;                           (*########### OK ############*)
@@ -281,3 +416,21 @@ compare Comput (Win (Human,1)) (Win (Comput,13));; (*########### OK ############
 compare Human (Win (Comput,13)) (Win (Human,15));; (*########### OK ############*)
 compare Human (Win (Comput,13)) (Win (Human,1));;  (*########### OK ############*)
 compare Human (Egality) (Egality);;                (*########### OK ############*)
+
+(* play test *)
+(* At the end of these play successions the score should be p1:9 - 12:p2 *)
+let play1=play state_test 4;;
+let play2=play play1 8;;
+let play3=play play2 9;;
+let play4=play play3 9;;
+let play5=play play4 6;;
+let play6=play play5 6;;
+(*let play5=play play4 10;;*)
+Printf.printf "%s%!\n" (state2s state_test);;      (*########### OK ############*)
+Printf.printf "%s%!\n" (state2s play1);;           (*########### OK ############*)
+Printf.printf "%s%!\n" (state2s play2);;           (*########### OK ############*)
+Printf.printf "%s%!\n" (state2s play3);;           (*########### OK ############*)
+Printf.printf "%s%!\n" (state2s play4);;           (*########### OK ############*)
+Printf.printf "%s%!\n" (state2s play5);;           (*########### OK ############*)
+Printf.printf "%s%!\n" (state2s play6);;           (*########### OK ############*)
+
