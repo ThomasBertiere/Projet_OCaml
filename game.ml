@@ -59,7 +59,7 @@ let is_valid s m =
 (*supprime m de la liste de s et change le joueur *)
 let play s m = 
 	if is_valid s m then 
-
+	(
 		(*Remove a card from the P1 or P2 cards*)
 		let rec remove x acc = function 
 			| [] -> acc		
@@ -98,7 +98,7 @@ let play s m =
 		
 		if p1=s.p then 
 			(if s.end_of_round=1 then 
-				(if played_card>played_card_p1 then 
+				(if played_card>played_card_p2 then 
 					let new_score_P1=score_P1+1 in
 					{cards_P1=new_cards;cards_P2=liste_card_p2;played_card_P1=played_card;played_card_P2=played_card_p2;
 					pts_P1=new_score_P1;pts_P2=score_P2;p=next_player;end_of_round=eor}
@@ -112,10 +112,24 @@ let play s m =
 				pts_P1=score_P1;pts_P2=score_P2;p=next_player;end_of_round=eor}
 			)	
 		else
-			
+			(if s.end_of_round=1 then 
+				(if played_card>played_card_p1 then 
+					let new_score_P2=score_P2+1 in 
+					{cards_P1=liste_card_p1;cards_P2=new_cards;played_card_P1=played_card_p1;played_card=played_card;
+					pts_P1=score_P1;pts_P2=new_score_P2;p=next_player;end_of_round=eor}
+				else
+					let new_score_P1=score_P1+1 in 
+					{cards_P1=liste_card_p1;cards_P2=new_cards;played_card_P1=played_card_p1;played_card=played_card;
+					pts_P1=new_score_P1;pts_P2=score_P2;p=next_player;end_of_round=eor}										
+		
+				)
+			else
+				{cards_P1=liste_card_p1;cards_P2=new_cards;played_card_P1=played_card_p1;played_card_P2=played_card;
+				pts_P1=score_P1;pts_P2=score_P2;p=next_player;end_of_round=eor}
+			)
 			
 
-
+	)
 	else
 	    failwith "move not possible";;
 
