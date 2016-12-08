@@ -59,7 +59,7 @@ let is_valid s m =
 (*supprime m de la liste de s et change le joueur *)
 let play s m = 
 	if is_valid s m then 
-
+	(
 		(*Remove a card from the P1 or P2 cards*)
 		let rec remove x acc = function 
 			| [] -> acc		
@@ -129,7 +129,7 @@ let play s m =
 			)
 			
 
-
+	)
 	else
 	    failwith "move not possible";;
 
