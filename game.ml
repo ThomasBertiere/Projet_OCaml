@@ -179,12 +179,12 @@ let result s =
 (*function which compare 2 results on the player pl point of view *)
 let compare pl resul1 resul2 = match (resul1,resul2) with 
   | (Win (p1),Win (p2)) -> 
-      (if p2=p1 && p1=pl then Equal else 
+      (if p2=p1 then Equal else 
        if p2=pl then Greater else
        if p1=pl then Smaller else failwith "Compare problem" )
   | (Egality,Egality) -> Equal 
-  | (Win(p1),Egality) -> if p1=pl then Smaller else failwith "Compare problem"  
-  | (Egality,Win(p1)) -> if p1=pl then Greater else failwith "Compare problem"  
+  | (Win(p1),Egality) -> if p1=pl then Smaller else Greater  
+  | (Egality,Win(p1)) -> if p1=pl then Greater else Smaller  
 
 (* Returns the worst possible score for the given player*)
 let worst_for p = Win (next p);;

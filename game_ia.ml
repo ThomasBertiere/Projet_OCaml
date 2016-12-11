@@ -1,64 +1,81 @@
 open Game
 
-(* Stupid IA: it take the first possible valid move.*)
-let best_move state =
+(*Stupid IA: it take the first possible valid move.
+  let best_move state =
   match List.filter (is_valid state) (all_moves state) with
-    | [] -> assert false
-    | m :: _ ->
-        let player = turn state in
-          (Some m, worst_for player)
+  | [] -> assert false
+  | m :: _ ->
+  let player = turn state in
+  (Some m, worst_for player)
 
-
-(*
-
-
+*)
 
 let find_max pl liste = 
 
   let rec aux acc pl = function 
-    | [] -> acc_max
-    | hd::tl -> 
-        let (mv,res) = hd in 
-          match compare pl acc res with 
-            | Equal -> aux acc pl tl
-            | Greater -> aux res tl
-            | Smaller -> aux acc tl 
+    | [] -> acc
+    | hd::tl -> let (mv,res)=hd in
+        let (acc_mv,acc_res) = acc in 
+          match compare pl acc_res res with 
+            | Equal -> aux hd pl tl
+            | Greater -> aux hd pl tl
+            | Smaller -> aux acc pl tl 
   in
-    aux (worst_for (pl)) (pl) (liste) ;;
+  let (a,b)=(List.hd liste) in
+    aux (a,worst_for (pl)) (pl) (liste) ;;
+
+
+(*
+let rec best_move state =
+let rec aux liste_mv_possible = match liste_mv_possible with 
+(*là on a la liste de mouvement possible valide à partir de state*)
+| [] -> []
+| mv :: tl -> 
+let state_mv =(play (state) (mv)) in 
+(match result state_mv with 
+| None -> Printf.printf "%s%!\n" (state2s state_mv);(best_move state_mv) :: aux tl 
+| Some res -> (Some mv,res)::aux tl  )
+in 
+Printf.printf "IA%!";Printf.printf " State : %s%!\n" (state2s state);
+let (a,b)=(find_max (turn state) (aux (List.filter (is_valid state) (all_moves state)))) in 
+match a with 
+| Some(m) -> Printf.printf "%s - %s\n%!" (move2s m) (result2s b);(a,b)  ;;
 
 
 
+let rec best_move state =
 
-let best_move state =
+let rec aux liste_mv_possible = match liste_mv_possible with 
+(*là on a la liste de mouvement possible valide à partir de state*)
+| [] -> []
+| mv :: tl -> 
+let state_mv =(play (state) (mv)) in 
+(match result state_mv with 
+| None -> (best_move state_mv) :: aux tl 
+| Some res -> (Some mv,res)::aux tl  )
+in 
+let l_mv_possible=(List.filter (is_valid state) (all_moves state)) in 
+if l_mv_possible=[] then (None,worst_for (turn state)) else 
+find_max (turn state) (aux l_mv_possible) ;;
+
+*)
+
+let rec best_move state =
 
   let rec aux liste_mv_possible = match liste_mv_possible with 
     (*là on a la liste de mouvement possible valide à partir de state*)
     | [] -> []
-    | mv :: tl ->  
-        (let state_mv = play mv in 
-           (match result state_mv with 
-             | None -> (find_max (turn state_mv) (aux (List.filter (is_valid state_mv) (all_moves state_mv)) ) )::aux tl (*pb de typage*)
-             | Some res -> (Some mv,res)::aux tl  )
-
+    | mv :: tl -> 
+        let state_mv =(play (state) (mv)) in 
+          (match result state_mv with 
+            | None -> let (a,b)=(best_move state_mv) in (Some mv,b)::aux tl 
+            | Some res -> (Some mv,res)::aux tl)
   in 
-    find_max (turn state_mv) (aux (List.filter (is_valid state) (all_moves state))) ;;
-
-
-(*
-let (mv2,res) = best_move (play state) in 
-if res = worst_for player then 
-(Some mv2, res) else 
-let (a,b)=state in 
-	best_move ((mv1+1),b)	
+  let l_mv_possible=List.filter (is_valid state) (all_moves state) in 
+  (*if l_mv_possible=[] then  (None,worst_for (turn state)) else *)
+  let  (a,b)=(find_max (turn state) (aux l_mv_possible)) in (a,b);;
 
 
 
 
 
-| [mv1] -> (match (result (play mv1)) with 
-| None -> [(Some mv1,0)]
-| Some res -> (Some mv1,res))
-
-*)
-;;
-*)

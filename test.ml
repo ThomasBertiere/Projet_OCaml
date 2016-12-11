@@ -182,7 +182,7 @@ type comparison = Equal | Greater | Smaller ;;
 
 let compare pl resul1 resul2 = match (resul1,resul2) with 
   | (Win (p1),Win (p2)) -> 
-      (if p2=p1 && p1=pl then Equal else 
+      (if p2=p1 then Equal else 
        if p2=pl then Greater else
        if p1=pl then Smaller else failwith "Compare problem" )
   | (Egality,Egality) -> Equal 
@@ -242,7 +242,7 @@ let play s m =
   else
     failwith "Play not possible"
 ;;	
- 	(*
+(*
 let play s m = 
 if is_valid s m then 
 ((*Remove a card from the P1 or P2 cards*)
