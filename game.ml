@@ -76,20 +76,20 @@ let rec random_card = function
   | hd::tl -> 
       let (p1,p2)=random_card tl in
         if (Random.int 2)= 0 then 
-          if (List.length p1)<27 then 
+          if (List.length p1)<9 then 
             (hd::p1),p2 
           else 
             p1,(hd::p2) 
         else
-        if (List.length p2)<27 then 
+        if (List.length p2)<9 then 
           p1,(hd::p2)
         else 
           (hd::p1),p2 
 
 (*return an initial state with a random distribution*)
 let initial =  
-  Random.init (567727889) ;
-  let card_p1,card_p2=random_card [1;1;1;1;2;2;2;2;3;3;3;3;4;4;4;4;5;5;5;5;6;6;6;6;7;7;7;7;8;8;8;8;9;9;9;9;10;10;10;10;11;11;11;11;12;12;12;12;13;13;13;13] in
+  Random.self_init() ;
+  let card_p1,card_p2=random_card [1;1;2;2;3;3;4;4;5;5;6;7;8;9;10;11;12;13] in
   let p1= if (Random.int 2)= 0 then Human else Comput in 
   let p2= next p1 in 
     { cards_P1=card_p1,p1  ;
@@ -119,7 +119,7 @@ let is_valid s m =
   let sc_p1,a=s.pts_P1 in
   let sc_p2,a=s.pts_P2 in 
     (*Printf.printf "%s%!\n" (listcards2s list_pl);*)
-    (not(liste_card_p1=[] && liste_card_p2=[])) && sc_p2<=13 && sc_p1<=13 && in_hand;;
+    (not(liste_card_p1=[] && liste_card_p2=[])) && sc_p2<=5 && sc_p1<=5 && in_hand;;
 
 
 (* Play a move *)
@@ -160,7 +160,7 @@ let play s m =
          p=new_pl;
          end_of_round=new_end_of_round})
   else 
-    	failwith "Play not possible"
+    failwith "Play not possible"
 
 (* return all the possible move considering a state*)
 let all_moves s =
@@ -172,9 +172,9 @@ let all_moves s =
 let result s = 
   let (pts_p1,p1)=s.pts_P1 in
   let (pts_p2,p2)=s.pts_P2 in 
-    if pts_p1>=14 then Some (Win (p1)) else
-    if pts_p2>=14 then Some (Win (p2)) else
-    if pts_p1=13 && pts_p2=13 then Some (Egality) else None ;;
+    if pts_p1>=5 then Some (Win (p1)) else
+    if pts_p2>=5 then Some (Win (p2)) else
+    if pts_p1=5 && pts_p2=5 then Some (Egality) else None ;;
 
 (*function which compare 2 results on the player pl point of view *)
 let compare pl resul1 resul2 = match (resul1,resul2) with 

@@ -25,55 +25,52 @@ let find_max pl liste =
     aux (a,worst_for (pl)) (pl) (liste) ;;
 
 
-(*
-let rec best_move state =
-let rec aux liste_mv_possible = match liste_mv_possible with 
-(*là on a la liste de mouvement possible valide à partir de state*)
-| [] -> []
-| mv :: tl -> 
-let state_mv =(play (state) (mv)) in 
-(match result state_mv with 
-| None -> Printf.printf "%s%!\n" (state2s state_mv);(best_move state_mv) :: aux tl 
-| Some res -> (Some mv,res)::aux tl  )
-in 
-Printf.printf "IA%!";Printf.printf " State : %s%!\n" (state2s state);
-let (a,b)=(find_max (turn state) (aux (List.filter (is_valid state) (all_moves state)))) in 
-match a with 
-| Some(m) -> Printf.printf "%s - %s\n%!" (move2s m) (result2s b);(a,b)  ;;
+
+let rec supr_occur  = function
+  | [] -> []
+  | [a] -> a::supr_occur []
+  | h1::h2::tl -> 
+      if h1=h2 then supr_occur (h2::tl) else h1::supr_occur (h2::tl) ;;
 
 
+let memory = (*Printf.printf"creat\n%!";*)Hashtbl.create 20;;
 
-let rec best_move state =
+let cache f =
+  fun arg ->
+    if Hashtbl.mem memory arg then 
+      begin
+        (*Printf.printf "dans htl\n%!";*)
+        Hashtbl.find memory arg
+      end 
+    else
+      begin
+        let res = f arg in 
+          Hashtbl.add memory arg res ;
+          res
+      end
 
-let rec aux liste_mv_possible = match liste_mv_possible with 
-(*là on a la liste de mouvement possible valide à partir de state*)
-| [] -> []
-| mv :: tl -> 
-let state_mv =(play (state) (mv)) in 
-(match result state_mv with 
-| None -> (best_move state_mv) :: aux tl 
-| Some res -> (Some mv,res)::aux tl  )
-in 
-let l_mv_possible=(List.filter (is_valid state) (all_moves state)) in 
-if l_mv_possible=[] then (None,worst_for (turn state)) else 
-find_max (turn state) (aux l_mv_possible) ;;
-
-*)
+let listcards2s l =
+  let rec aux = function 
+    | [] -> " ]"
+    | [a] -> " "^move2s a^aux [] 
+    | hd::tl ->" "^move2s hd^" , "^aux tl 
+  in
+    "["^aux l;;
 
 let rec best_move state =
-
-  let rec aux liste_mv_possible = match liste_mv_possible with 
-    (*là on a la liste de mouvement possible valide à partir de state*)
-    | [] -> []
-    | mv :: tl -> 
-        let state_mv =(play (state) (mv)) in 
-          (match result state_mv with 
-            | None -> let (a,b)=(best_move state_mv) in (Some mv,b)::aux tl 
-            | Some res -> (Some mv,res)::aux tl)
+  let rec aux list_possible_mv = 
+    let list_simplified=(*Printf.printf "normal : %s\n%!" (listcards2s list_possible_mv);*)supr_occur list_possible_mv in 
+      match list_simplified with 
+        (*là on a la liste de mouvement possible valide à partir de state*)
+        | [] -> []
+        | mv :: tl -> 
+            let state_mv =(*Printf.printf "simpli : %s\n%!" (listcards2s list_simplified);*)(play (state) (mv)) in 
+              (match result state_mv with 
+                | None -> let (a,b)=(cache (best_move) (state_mv)) in (Some mv,b)::aux tl 
+                | Some res -> (Some mv,res)::aux tl)
   in 
-  let l_mv_possible=List.filter (is_valid state) (all_moves state) in 
-  (*if l_mv_possible=[] then  (None,worst_for (turn state)) else *)
-  let  (a,b)=(find_max (turn state) (aux l_mv_possible)) in (a,b);;
+  let l_possible_mv=List.filter (is_valid state) (all_moves state) in 
+  let  (a,b)=(find_max (turn state) (aux l_possible_mv)) in (a,b);;
 
 
 
