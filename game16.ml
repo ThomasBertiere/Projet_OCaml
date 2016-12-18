@@ -29,16 +29,35 @@ type comparison = Equal | Greater | Smaller ;;
 
 (*############################### PRINTERS ###############################*)
 
-(*convert a intger list in string*)
+(*convert a card into a string*)
+let card2s card = 
+  if card=11 then "V" else
+  if card=12 then "D" else
+  if card=13 then "R" else
+  if card=1 then "A" else string_of_int card
+
+(*convert a player hand into a string*)
 let listcards2s l =
   let rec aux = function 
-    | [] -> " ]"
-    | [a] -> " "^string_of_int a^aux [] 
-    | hd::tl ->" "^string_of_int hd^" , "^aux tl 
+    | [] -> ""
+    | hd::tl ->"["^card2s hd^"] "^aux tl
   in
-    "["^aux l;;
+    aux l;;
 
-(*convert a state in string*)
+(*convert a game int a string*)
+let game2s s = 
+  let (card_p1,p1)=s.cards_P1 in
+  let (card_p2,p2)=s.cards_P2 in
+  let (old_card_p1,p1)= if s.end_of_round=1 then if s.p=p1 then 0,p1 else s.played_card_P1 else s.played_card_P1 in
+  let (old_card_p2,p2)= if s.end_of_round=1 then if s.p=p2 then 0,p2 else s.played_card_P2 else s.played_card_P2 in
+  let (played_card_p1,p1)=if s.end_of_round=0 then 0,p1 else if s.p=p1 then 0,p1 else s.played_card_P1 in
+  let (played_card_p2,p2)=if s.end_of_round=0 then 0,p2 else if s.p=p2 then 0,p2 else s.played_card_P2 in
+  let (pts_p1,p1)=s.pts_P1 in
+  let (pts_p2,p2)=s.pts_P2 in
+  let round=if s.end_of_round=0 then "\n\n#################################################\n################### NEW ROUND ###################\n#################################################\n\n" else "" in 
+    Printf.sprintf "%s#################################################\n                      %s\n          %s\n\n\n          [%s] |        [%s]\n          [%s] |        [%s]\n\n\n          %s\n                     %s\n\n                     Score \n            %s : %d - %d : %s\n            Player to play : %s\n#################################################\n\n" round (player2s p1) (listcards2s card_p1) (card2s old_card_p1) (card2s played_card_p1) (card2s old_card_p2) (card2s played_card_p2) (listcards2s card_p2) (player2s p2) (player2s p1) pts_p1 pts_p2 (player2s p2) (player2s s.p)  
+
+(*couvert a state into a string*)
 let state2s s = 
   let (card_p1,p1)=s.cards_P1 in
   let (card_p2,p2)=s.cards_P2 in
@@ -46,7 +65,7 @@ let state2s s =
   let (played_card_p2,p2)=s.played_card_P2 in
   let (pts_p1,p1)=s.pts_P1 in
   let (pts_p2,p2)=s.pts_P2 in
-    Printf.sprintf "Current state : \n   Player to play : %s\n   Player 1 : %s\n      Cards : %s\n      Played card : %d\n      Pts : %d\n   Player 2 : %s\n      Cards : %s\n      Played card : %d\n      Pts : %d\n   End of round : %d%!\n\n" (player2s s.p) (player2s p1) (listcards2s card_p1) played_card_p1 pts_p1 (player2s p2) (listcards2s card_p2) played_card_p2 pts_p2 s.end_of_round;;
+    Printf.sprintf "\nCurrent state : \n   Player to play : %s\n   Player 1 : %s\n      Cards : %s\n      Played card : %s\n      Pts : %d\n   Player 2 : %s\n      Cards : %s\n      Played card : %s\n      Pts : %d\n   End of round : %d%!\n\n" (player2s s.p) (player2s p1) (listcards2s card_p1) (card2s played_card_p1) pts_p1 (player2s p2) (listcards2s card_p2) (card2s played_card_p2) pts_p2 s.end_of_round;;
 
 (*convert a move in string*)
 let move2s n = Printf.sprintf " Joue : %d" n 
@@ -60,12 +79,10 @@ let result2s = function
 (*############################### READERS ###############################*)
 
 (*read a move*)
-let readmove s = try Some (int_of_string s) with _ -> None
-
-
-
-
-
+let readmove s = try Some (if s="A" then 1 else
+                           if s="V" then 11 else
+                           if s="D" then 12 else
+                           if s="R" then 13 else int_of_string s) with _ -> None
 
 
 (*################################ FUNCTIONS #################################*)

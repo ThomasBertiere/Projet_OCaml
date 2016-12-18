@@ -12,7 +12,7 @@ let ask_move state =
           Printf.printf "\n Cannot read this move: %s\n\n%!" line ;
           None
 
-      | Some mov ->
+      | Some mov -> 
           if not (is_valid state mov) then
             begin
               Printf.printf "\n This move is invalid: %s\n\n%!" (move2s mov) ;
@@ -33,13 +33,12 @@ let ia_move state =
 let rec run with_ia state =
 
   (* Print state & which player to play. *)
-  Printf.printf "\n%s\n %s to play.\n\n%!" (state2s state) (player2s (turn state)) ;
+  Printf.printf "%s%!" (game2s state) ;
 
   match result state with
     | Some r ->
         (* Game is finished. Print result. *)
         Printf.printf "*** %s ***\n%!" (result2s r) ;
-        ()
 
     | None ->
         (* Game is not finished. Play one turn. *)

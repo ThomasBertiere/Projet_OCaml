@@ -1,4 +1,50 @@
-open Gamebase
+type player = Human | Comput
+
+(* Next turn *)
+let next = function
+  | Human -> Comput
+  | Comput -> Human
+
+let player2s = function
+  | Human -> "Human"
+  | Comput -> "Comput"
+
+
+
+(* Helper functions on matrices *)
+
+type 'a matrix = 'a array array
+
+let clone_matrix m =
+  let cloned = Array.copy m in
+    Array.iteri (fun i line -> cloned.(i) <- Array.copy line) cloned ;
+    cloned
+
+exception Found of int * int
+
+let find_cell m p =
+  try
+    for row = 0 to Array.length m - 1 do
+      let line = m.(row) in
+        for col = 0 to Array.length line - 1 do
+          if p line.(col) then raise (Found (row, col))
+        done ;
+    done;
+    None
+
+  with Found (r,c) -> Some (r,c)
+
+let line2s v2s line = Array.fold_left (fun s v -> s ^ v2s v ^ "|") "|" line
+
+let linesep = "-------\n"
+
+(* Transforms a grid to a string. *)
+let matrix2s m v2s =
+  if Array.length m = 0 then "(empty matrix)"
+  else
+    let firstline = line2s v2s m.(0) in
+    let linesep = (String.make (String.length firstline) '-') ^ "\n" in
+      Array.fold_left (fun s line -> s ^ (line2s v2s line) ^ "\n" ^ linesep) linesep m
 
 (* These types are abstract in game.mli *)
 
@@ -29,35 +75,16 @@ type comparison = Equal | Greater | Smaller ;;
 
 (*############################### PRINTERS ###############################*)
 
-(*convert a card into a string*)
-let card2s card = 
-  if card=11 then "V" else
-  if card=12 then "D" else
-  if card=13 then "R" else
-  if card=1 then "A" else string_of_int card
-
-(*convert a player hand into a string*)
+(*convert a intger list in string*)
 let listcards2s l =
   let rec aux = function 
-    | [] -> ""
-    | hd::tl ->"["^card2s hd^"] "^aux tl
+    | [] -> " ]"
+    | [a] -> " "^string_of_int a^aux [] 
+    | hd::tl ->" "^string_of_int hd^" , "^aux tl 
   in
-    aux l;;
+    "["^aux l;;
 
-(*convert a game int a string*)
-let game2s s = 
-  let (card_p1,p1)=s.cards_P1 in
-  let (card_p2,p2)=s.cards_P2 in
-  let (old_card_p1,p1)= if s.end_of_round=1 then if s.p=p1 then 0,p1 else s.played_card_P1 else s.played_card_P1 in
-  let (old_card_p2,p2)= if s.end_of_round=1 then if s.p=p2 then 0,p2 else s.played_card_P2 else s.played_card_P2 in
-  let (played_card_p1,p1)=if s.end_of_round=0 then 0,p1 else if s.p=p1 then 0,p1 else s.played_card_P1 in
-  let (played_card_p2,p2)=if s.end_of_round=0 then 0,p2 else if s.p=p2 then 0,p2 else s.played_card_P2 in
-  let (pts_p1,p1)=s.pts_P1 in
-  let (pts_p2,p2)=s.pts_P2 in
-  let round=if s.end_of_round=0 then "\n\n#################################################\n################### NEW ROUND ###################\n#################################################\n\n" else "" in 
-    Printf.sprintf "%s#################################################\n                      %s\n          %s\n\n\n          [%s] |        [%s]\n          [%s] |        [%s]\n\n\n          %s\n                     %s\n\n                     Score \n            %s : %d - %d : %s\n            Player to play : %s\n#################################################\n\n" round (player2s p1) (listcards2s card_p1) (card2s old_card_p1) (card2s played_card_p1) (card2s old_card_p2) (card2s played_card_p2) (listcards2s card_p2) (player2s p2) (player2s p1) pts_p1 pts_p2 (player2s p2) (player2s s.p)  
-
-(*couvert a state into a string*)
+(*convert a state in string*)
 let state2s s = 
   let (card_p1,p1)=s.cards_P1 in
   let (card_p2,p2)=s.cards_P2 in
@@ -65,7 +92,8 @@ let state2s s =
   let (played_card_p2,p2)=s.played_card_P2 in
   let (pts_p1,p1)=s.pts_P1 in
   let (pts_p2,p2)=s.pts_P2 in
-    Printf.sprintf "\nCurrent state : \n   Player to play : %s\n   Player 1 : %s\n      Cards : %s\n      Played card : %s\n      Pts : %d\n   Player 2 : %s\n      Cards : %s\n      Played card : %s\n      Pts : %d\n   End of round : %d%!\n\n" (player2s s.p) (player2s p1) (listcards2s card_p1) (card2s played_card_p1) pts_p1 (player2s p2) (listcards2s card_p2) (card2s played_card_p2) pts_p2 s.end_of_round;;
+  let round=if s.end_of_round=0 then "\n################### NEW ROUND ###################\n\n" else "" in 
+    Printf.sprintf "%s Current state : \n   Player to play : %s\n   Player 1 : %s\n      Cards : %s\n      Played card : %d\n      Pts : %d\n   Player 2 : %s\n      Cards : %s\n      Played card : %d\n      Pts : %d\n   End of round : %d%!\n\n" round (player2s s.p) (player2s p1) (listcards2s card_p1) played_card_p1 pts_p1 (player2s p2) (listcards2s card_p2) played_card_p2 pts_p2 s.end_of_round;;
 
 (*convert a move in string*)
 let move2s n = Printf.sprintf " Joue : %d" n 
@@ -79,10 +107,7 @@ let result2s = function
 (*############################### READERS ###############################*)
 
 (*read a move*)
-let readmove s = try Some (if s="A" then 1 else
-                           if s="V" then 11 else
-                           if s="D" then 12 else
-                           if s="R" then 13 else int_of_string s) with _ -> None
+let readmove s = try Some (int_of_string s) with _ -> None
 
 
 
@@ -98,12 +123,12 @@ let rec random_card = function
   | hd::tl -> 
       let (p1,p2)=random_card tl in
         if (Random.int 2)= 0 then 
-          if (List.length p1)<27 then 
+          if (List.length p1)<6 then 
             (hd::p1),p2 
           else 
             p1,(hd::p2) 
         else
-        if (List.length p2)<27 then 
+        if (List.length p2)<6 then 
           p1,(hd::p2)
         else 
           (hd::p1),p2 
@@ -111,7 +136,7 @@ let rec random_card = function
 (*return an initial state with a random distribution*)
 let initial =  
   Random.self_init() ;
-  let card_p1,card_p2=random_card [1;1;1;1;2;2;2;2;3;3;3;3;4;4;4;4;5;5;5;5;6;6;6;6;7;7;7;7;8;8;8;8;9;9;9;9;10;10;10;10;11;11;11;11;12;12;12;12;13;13;13;13] in
+  let card_p1,card_p2=random_card [1;2;3;4;5;6;7;8;9;10;11;12] in
   let p1= if (Random.int 2)= 0 then Human else Comput in 
   let p2= next p1 in 
     { cards_P1=card_p1,p1  ;
@@ -141,7 +166,7 @@ let is_valid s m =
   let sc_p1,a=s.pts_P1 in
   let sc_p2,a=s.pts_P2 in 
     (*Printf.printf "%s%!\n" (listcards2s list_pl);*)
-    (not(liste_card_p1=[] && liste_card_p2=[])) && sc_p2<=13 && sc_p1<=13 && in_hand;;
+    (not(liste_card_p1=[] && liste_card_p2=[])) && sc_p2<=3 && sc_p1<=3 && in_hand;;
 
 
 (* Play a move *)
@@ -194,9 +219,9 @@ let all_moves s =
 let result s = 
   let (pts_p1,p1)=s.pts_P1 in
   let (pts_p2,p2)=s.pts_P2 in 
-    if pts_p1>=14 then Some (Win (p1)) else
-    if pts_p2>=14 then Some (Win (p2)) else
-    if pts_p1=13 && pts_p2=13 then Some (Egality) else None ;;
+    if pts_p1>=4 then Some (Win (p1)) else
+    if pts_p2>=4 then Some (Win (p2)) else
+    if pts_p1=3 && pts_p2=3 then Some (Egality) else None ;;
 
 (*function which compare 2 results on the player pl point of view *)
 let compare pl resul1 resul2 = match (resul1,resul2) with 
@@ -210,4 +235,126 @@ let compare pl resul1 resul2 = match (resul1,resul2) with
 
 (* Returns the worst possible score for the given player*)
 let worst_for p = Win (next p);;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let compare_mv (mv1,res1) (mv2,res2) = if mv1>mv2 then (mv2,res2) else (mv1,res1);;
+
+let find_max pl liste = 
+
+  let rec aux acc pl = function 
+    | [] -> acc
+    | hd::tl -> let (mv,res)=hd in
+        let (acc_mv,acc_res) = acc in 
+        let rien = (Printf.printf "On est equal : r1 : %s  vs r2 : %s     -----      mv1 : %s  vs  mv2 : %s  ---- mv selec : \n%!" result2s(res) result2s(acc_res) move2s(mv) move2s(acc_mv)); 1 in 
+          match compare pl acc_res res with 
+            | Equal -> aux (compare_mv(hd) (acc)) pl tl;
+            | Greater -> aux hd pl tl
+            | Smaller -> aux acc pl tl 
+  in
+  let (a,b)=(List.hd liste) in
+    aux (a,worst_for (pl)) (pl) (liste) ;;
+
+
+
+
+
+let rec supr_occur  = function
+  | [] -> []
+  | [a] -> a::supr_occur []
+  | h1::h2::tl -> 
+      if h1=h2 then supr_occur (h2::tl) else h1::supr_occur (h2::tl) ;;
+
+
+let memory = (*Printf.printf"creat\n%!";*)Hashtbl.create 20;;
+
+let cache f =
+  fun arg ->
+    if Hashtbl.mem memory arg then 
+      begin
+        (*Printf.printf "dans htl\n%!";*)
+        Hashtbl.find memory arg
+      end 
+    else
+      begin
+        let res = f arg in 
+          Hashtbl.add memory arg res ;
+          res
+      end
+
+let listcards2s l =
+  let rec aux = function 
+    | [] -> " ]"
+    | [a] -> " "^move2s a^aux [] 
+    | hd::tl ->" "^move2s hd^" , "^aux tl 
+  in
+    "["^aux l;;
+
+let rec best_move state =
+  let rec aux list_possible_mv = 
+    let list_simplified=supr_occur list_possible_mv in 
+      match list_simplified with 
+        (*là on a la liste de mouvement possible valide à partir de state*)
+        | [] -> []
+        | mv :: tl -> 
+            let state_mv =(play (state) (mv)) in 
+              (match result state_mv with 
+                | None -> let (a,b)=(cache (best_move) (state_mv)) in (Some mv,b)::aux tl 
+                | Some res -> (Some mv,res)::aux tl)
+  in 
+  let l_possible_mv=List.filter (is_valid state) (all_moves state) in 
+  let  (a,b)=(find_max (turn state) (aux l_possible_mv)) in (a,b);;
+
+
+
+
 

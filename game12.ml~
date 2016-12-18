@@ -88,7 +88,7 @@ let rec random_card = function
 
 (*return an initial state with a random distribution*)
 let initial =  
-  Random.init (567727889) ;
+  Random.self_init() ;
   let card_p1,card_p2=random_card [1;2;3;4;5;6;7;8;9;10;11;12] in
   let p1= if (Random.int 2)= 0 then Human else Comput in 
   let p2= next p1 in 

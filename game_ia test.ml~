@@ -18,9 +18,7 @@ let find_max pl liste =
     | hd::tl -> let (mv,res)=hd in
         let (acc_mv,acc_res) = acc in 
           match compare pl acc_res res with 
-            | Equal -> (match (res,acc_res) with 
-                         | Win(x),Win(y) -> if x=y && x=(turn pl) then aux (compare_mv(hd) (acc)) pl tl else aux hd pl tl
-                         | _ -> aux hd pl tl)
+            | Equal -> aux (compare_mv(hd) (acc)) pl tl
             | Greater -> aux hd pl tl
             | Smaller -> aux acc pl tl 
   in

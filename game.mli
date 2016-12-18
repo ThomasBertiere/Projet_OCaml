@@ -30,6 +30,7 @@ type result
 
 
 (* to_string functions *)
+val game2s:    state -> string 
 val state2s:   state -> string
 val move2s:     move -> string
 val result2s: result -> string
@@ -67,6 +68,7 @@ type comparison = Equal | Greater | Smaller
  *                         returns Greater if r2 is better than r1 (from the point of view of player). 
  *                         returns Smaller if r1 is better than r2 (from the point of view of player). *)
 val compare: player -> result -> result -> comparison
+val compare_mv: (move option *result) -> (move option *result) -> player -> (move option *result) 
 
 (* Returns the worst possible score for the given player. Useful for computing min or max.
  * The worst for H is supposed to be the best for C, and conversely. *)
