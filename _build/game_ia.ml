@@ -40,7 +40,6 @@ let cache f =
   fun arg ->
     if Hashtbl.mem memory arg then 
       begin
-        (*Printf.printf "dans htl\n%!";*)
         Hashtbl.find memory arg
       end 
     else

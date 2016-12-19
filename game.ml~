@@ -210,3 +210,23 @@ let compare_mv (mv1,res1) (mv2,res2) pl = match res1,res2 with
 (* Returns the worst possible score for the given player*)
 let worst_for p = Win (next p);;
 
+
+
+
+
+
+
+
+(*
+
+pour profondeur 
+
+let result_socre s = 
+  let (pts_p1,p1)=s.pts_P1 in
+  let (pts_p2,p2)=s.pts_P2 in 
+    if pts_p1>=5 then (Win (p1)) else
+    if pts_p2>=5 then (Win (p2)) else
+    if pts_p1=4 && pts_p2=4 then (Egality) else 
+    if pts_p1=pts_p2 then (Egality) else
+    if pts_p1>pts_p2 then (Win (p1)) else (Win (p2));;
+*)
