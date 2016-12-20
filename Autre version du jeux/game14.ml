@@ -48,14 +48,14 @@ let listcards2s l =
 let game2s s = 
   let (card_p1,p1)=s.cards_P1 in
   let (card_p2,p2)=s.cards_P2 in
-  let (old_card_p1,p1)= if s.end_of_round=1 then 0,p1 else s.played_card_P1 in
-  let (old_card_p2,p2)= if s.end_of_round=1 then 0,p2 else s.played_card_P2 in
+  let (old_card_p1,p1)= if s.end_of_round=1 then if s.p=p1 then 0,p1 else s.played_card_P1 else s.played_card_P1 in
+  let (old_card_p2,p2)= if s.end_of_round=1 then if s.p=p2 then 0,p2 else s.played_card_P2 else s.played_card_P2 in
   let (played_card_p1,p1)=if s.end_of_round=0 then 0,p1 else if s.p=p1 then 0,p1 else s.played_card_P1 in
   let (played_card_p2,p2)=if s.end_of_round=0 then 0,p2 else if s.p=p2 then 0,p2 else s.played_card_P2 in
   let (pts_p1,p1)=s.pts_P1 in
   let (pts_p2,p2)=s.pts_P2 in
   let round=if s.end_of_round=0 then "\n\n#################################################\n################### NEW ROUND ###################\n#################################################\n\n" else "" in 
-    Printf.sprintf "%s#################################################\n                      %s\n          %s\n\n\n          [%s] |        [%s]\n          [%s] |        [%s]\n\n\n          %s\n                     %s\n\n                     Score \n            %s : %d - %d : %s\n            Player to play : %s\n#################################################\n\n" round (player2s p1) (listcards2s card_p1) (card2s old_card_p1) (card2s played_card_p1) (card2s old_card_p2) (card2s played_card_p2) (listcards2s card_p2) (player2s p2) (player2s p1) pts_p1 pts_p2 (player2s p2) (player2s s.p)
+    Printf.sprintf "%s#################################################\n                      %s\n          %s\n\n\n          [%s] |        [%s]\n          [%s] |        [%s]\n\n\n          %s\n                     %s\n\n                     Score \n            %s : %d - %d : %s\n            Player to play : %s\n#################################################\n\n" round (player2s p1) (listcards2s card_p1) (card2s old_card_p1) (card2s played_card_p1) (card2s old_card_p2) (card2s played_card_p2) (listcards2s card_p2) (player2s p2) (player2s p1) pts_p1 pts_p2 (player2s p2) (player2s s.p)  
 
 (*couvert a state into a string*)
 let state2s s = 
@@ -85,6 +85,8 @@ let readmove s = try Some (if s="A" then 1 else
                            if s="R" then 13 else int_of_string s) with _ -> None
 
 
+
+
 (*################################ FUNCTIONS #################################*)
 
 (*return a random distribution between 2 players of a 52 cards game*)
@@ -93,12 +95,12 @@ let rec random_card = function
   | hd::tl -> 
       let (p1,p2)=random_card tl in
         if (Random.int 2)= 0 then 
-          if (List.length p1)<8 then 
+          if (List.length p1)<7 then 
             (hd::p1),p2 
           else 
             p1,(hd::p2) 
         else
-        if (List.length p2)<8 then 
+        if (List.length p2)<7 then 
           p1,(hd::p2)
         else 
           (hd::p1),p2 
@@ -106,7 +108,7 @@ let rec random_card = function
 (*return an initial state with a random distribution*)
 let initial =  
   Random.self_init() ;
-  let card_p1,card_p2=random_card [1;1;2;2;3;3;4;5;6;7;8;9;10;11;12;13] in
+  let card_p1,card_p2=random_card [1;1;2;3;4;5;6;7;8;9;10;11;12;13] in
   let p1= if (Random.int 2)= 0 then Human else Comput in 
   let p2= next p1 in 
     { cards_P1=card_p1,p1  ;
@@ -135,6 +137,7 @@ let is_valid s m =
   let in_hand=(member m list_pl) in 
   let sc_p1,a=s.pts_P1 in
   let sc_p2,a=s.pts_P2 in 
+    (*Printf.printf "%s%!\n" (listcards2s list_pl);*)
     (not(liste_card_p1=[] && liste_card_p2=[])) && sc_p2<=4 && sc_p1<=4 && in_hand;;
 
 
@@ -188,8 +191,8 @@ let all_moves s =
 let result s = 
   let (pts_p1,p1)=s.pts_P1 in
   let (pts_p2,p2)=s.pts_P2 in 
-    if pts_p1>=5 then Some (Win (p1)) else
-    if pts_p2>=5 then Some (Win (p2)) else
+    if pts_p1>=4 then Some (Win (p1)) else
+    if pts_p2>=4 then Some (Win (p2)) else
     if pts_p1=4 && pts_p2=4 then Some (Egality) else None ;;
 
 (*function which compare 2 results on the player pl point of view *)
@@ -202,33 +205,6 @@ let compare pl resul1 resul2 = match (resul1,resul2) with
   | (Win(p1),Egality) -> if p1=pl then Smaller else Greater  
   | (Egality,Win(p1)) -> if p1=pl then Greater else Smaller  
 
-
 (* Returns the worst possible score for the given player*)
 let worst_for p = Win (next p);;
-
-(*return a result even if the game is not finished, usefull if we limit the depth of the IA algorithm*)
-let result_socre s = 
-  let (pts_p1,p1)=s.pts_P1 in
-  let (pts_p2,p2)=s.pts_P2 in
-    if pts_p1>=5 then (Win (p1)) else
-    if pts_p2>=5 then (Win (p2)) else
-    if pts_p1=4 && pts_p2=4 then (Egality) else 
-    if pts_p1=pts_p2 then (Egality) else
-    if pts_p1>pts_p2 then (Win (p1)) else (Win (p2));;
-
-
-
-
-
-(*
-pour le je joue la carte la plus nul si je perd 
-
-let compare_mv (mv1,res1) (mv2,res2) pl = match res1,res2 with 
-| Win (p1), Win (p2) -> if p1=p2 && pl=(next p1) then if mv1>mv2 then (mv2,res2) else (mv1,res1) else (mv1,res1)
-| _ -> (mv1,res1);;
-
-
-*)
-
-
 

@@ -74,8 +74,10 @@ val compare: player -> result -> result -> comparison
  * The worst for H is supposed to be the best for C, and conversely. *)
 val worst_for: player -> result
 
-(*
+(*return a result even if the game is not finished, usefull if we limit the depth of the IA algorithm*)
+val result_socre: state -> result 
 
-val result_socre: state -> result   
+
+ (* 
 val compare_mv: (move option *result) -> (move option *result) -> player -> (move option *result) 
 *)

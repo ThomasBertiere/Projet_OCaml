@@ -23,7 +23,7 @@ let ask_move state =
 (*You have to decomment all this to play vs the computer*)
 (* Get the move from the IA. *)
 let ia_move state =
-  let (mov, _) = Game_ia.best_move state in
+  let (mov, _) = Game_ia.best_move_with_depth (state,4) in
     match mov with
       | None -> assert false
       | Some m -> m
