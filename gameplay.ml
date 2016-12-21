@@ -1,11 +1,5 @@
 open Gamebase
 open Game
-open Functory.Network
-open Functory.Network.Same
-
-
-let () = Functory.Control.set_debug true 
-
 
 (* Interactively ask for the player's move. 
  * Returns Some move, or None when the move is invalid. *)
@@ -29,7 +23,7 @@ let ask_move state =
 (*You have to decomment all this to play vs the computer*)
 (* Get the move from the IA. *)
 let ia_move state =
-  let (mov, _) = Game_ia.best_move state in
+  let (mov, _) = Game_ia.best_move_with_depth (state,4) in
     match mov with
       | None -> assert false
       | Some m -> m
@@ -37,7 +31,7 @@ let ia_move state =
 (*** Each player in turn. ***)
 
 let rec run with_ia state =
-	declare_workers ~n:7 "localhost" ;
+
   (* Print state & which player to play. *)
   Printf.printf "%s%!" (game2s state) ;
 
@@ -61,21 +55,4 @@ let rec run with_ia state =
           run with_ia state'
 
 
-let () = 
-
-  (* Sys.argv are the command-line arguments. *)
-  match Sys.argv with
-
-    (* If there is one argument equal to "master" *)
-    | [| _ ; "master" |] -> 
-        Printf.printf "I am the master.\n%!" ;
-        run true initial
-
-    (* Otherwise, we are a worker. *)
-    | _ -> 
-        Printf.printf "I am a worker.\n%!" ;
-        Functory.Network.Same.Worker.compute ()
-
-
-
-
+let () = run true initial

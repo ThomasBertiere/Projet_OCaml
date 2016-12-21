@@ -1,6 +1,4 @@
 open Game
-open Functory.Network
-open Functory.Network.Same
 
 (*Stupid IA: it take the first possible valid move.
   let best_move state =
@@ -46,13 +44,13 @@ let cache f =
       end 
     else
       begin
-        let res = match f arg with | [a] -> a | _ -> failwith "error" in 
+        let res = f arg in 
           Hashtbl.add memory arg res ;
           res
       end
 
 
-let rec f_best_move state =
+let rec best_move state =
   let rec aux list_possible_mv = 
     let list_simplified=supr_occur list_possible_mv in 
       match list_simplified with 
@@ -61,37 +59,11 @@ let rec f_best_move state =
         | mv :: tl -> 
             let state_mv =(play (state) (mv)) in 
               (match result state_mv with 
-                | None -> let res = match f_best_move state_mv with | [a] -> a | _ -> failwith "error" in res::aux tl 
+                | None -> let (a,b)=(cache (best_move) (state_mv)) in (Some mv,b)::aux tl 
                 | Some res -> (Some mv,res)::aux tl)
   in 
   let l_possible_mv=List.filter (is_valid state) (all_moves state) in 
-    [find_max (turn state) (aux l_possible_mv)];;
-
-let fold acc x = Printf.printf "===GO===\n%!" ; match x with | [] -> acc | [res] -> res::acc | _ -> failwith "error"
-
-
-let best_move state = 
-	let rec aux = function 
-		| [] -> []
-    | mv :: tl -> (play state mv)::(aux tl)           
-  in  
-	let l_possible_mv=List.filter (is_valid state) (all_moves state) in
-	let list_simplified= supr_occur l_possible_mv in 
-	let list_state_possible = aux list_simplified in 
-	Printf.printf "******OKK******\n%!" ; 
-  let result = map_fold_ac ~f:f_best_move ~fold:fold [] list_state_possible in
-	Printf.printf "******OKK******\n%!" ; 
-
-	find_max (turn state) result
-	
-
-	 
-
-
-
-
-
-
+    find_max (turn state) (aux l_possible_mv);;
 
 
 

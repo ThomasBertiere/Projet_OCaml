@@ -28,6 +28,7 @@ type move
  *   or a three-value result: (Human wins / Comput wins / Even game) *)
 type result
 
+val played_cards: state -> (int*player)*(int*player)
 
 (* to_string functions *)
 val game2s:    state -> string 
@@ -68,13 +69,16 @@ type comparison = Equal | Greater | Smaller
  *                         returns Greater if r2 is better than r1 (from the point of view of player). 
  *                         returns Smaller if r1 is better than r2 (from the point of view of player). *)
 val compare: player -> result -> result -> comparison
-val compare_mv: (move option *result) -> (move option *result) -> player -> (move option *result) 
+
 
 (* Returns the worst possible score for the given player. Useful for computing min or max.
  * The worst for H is supposed to be the best for C, and conversely. *)
 val worst_for: player -> result
 
+(*return a result even if the game is not finished, usefull if we limit the depth of the IA algorithm*)
+val result_socre: state -> result 
 
 
-val result_socre: state -> result   
-
+ (* 
+val compare_mv: (move option *result) -> (move option *result) -> player -> (move option *result) 
+*)
