@@ -1,4 +1,0 @@
-rm -r _build
-ocamlbuild gameplay.byte
-ocamlbuild gameplay.native
-./gameplay.native
