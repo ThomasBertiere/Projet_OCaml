@@ -26,6 +26,9 @@ type result = Win of player | Egality
 type comparison = Equal | Greater | Smaller ;;
 
 
+let played_cards state = state.played_card_P1,state.played_card_P2;;
+
+
 
 (*############################### PRINTERS ###############################*)
 
@@ -93,12 +96,12 @@ let rec random_card = function
   | hd::tl -> 
       let (p1,p2)=random_card tl in
         if (Random.int 2)= 0 then 
-          if (List.length p1)<8 then 
+          if (List.length p1)<6 then 
             (hd::p1),p2 
           else 
             p1,(hd::p2) 
         else
-        if (List.length p2)<8 then 
+        if (List.length p2)<6 then 
           p1,(hd::p2)
         else 
           (hd::p1),p2 
@@ -106,7 +109,7 @@ let rec random_card = function
 (*return an initial state with a random distribution*)
 let initial =  
   Random.self_init() ;
-  let card_p1,card_p2=random_card [1;1;2;2;3;3;4;5;6;7;8;9;10;11;12;13] in
+  let card_p1,card_p2=random_card [1;2;3;4;5;6;7;8;9;10;11;12] in
   let p1= if (Random.int 2)= 0 then Human else Comput in 
   let p2= next p1 in 
     { cards_P1=card_p1,p1  ;
@@ -188,9 +191,9 @@ let all_moves s =
 let result s = 
   let (pts_p1,p1)=s.pts_P1 in
   let (pts_p2,p2)=s.pts_P2 in 
-    if pts_p1>=5 then Some (Win (p1)) else
-    if pts_p2>=5 then Some (Win (p2)) else
-    if pts_p1=4 && pts_p2=4 then Some (Egality) else None ;;
+    if pts_p1>=4 then Some (Win (p1)) else
+    if pts_p2>=4 then Some (Win (p2)) else
+    if pts_p1=3 && pts_p2=3 then Some (Egality) else None ;;
 
 (*function which compare 2 results on the player pl point of view *)
 let compare pl resul1 resul2 = match (resul1,resul2) with 
@@ -210,9 +213,9 @@ let worst_for p = Win (next p);;
 let result_socre s = 
   let (pts_p1,p1)=s.pts_P1 in
   let (pts_p2,p2)=s.pts_P2 in
-    if pts_p1>=5 then (Win (p1)) else
-    if pts_p2>=5 then (Win (p2)) else
-    if pts_p1=4 && pts_p2=4 then (Egality) else 
+    if pts_p1>=4 then (Win (p1)) else
+    if pts_p2>=4 then (Win (p2)) else
+    if pts_p1=3 && pts_p2=3 then (Egality) else 
     if pts_p1=pts_p2 then (Egality) else
     if pts_p1>pts_p2 then (Win (p1)) else (Win (p2));;
 

@@ -28,6 +28,7 @@ type move
  *   or a three-value result: (Human wins / Comput wins / Even game) *)
 type result
 
+val played_cards: state -> (move*player)*(move*player)
 
 (* to_string functions *)
 val game2s:    state -> string 
