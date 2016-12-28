@@ -62,16 +62,14 @@ let rec f_best_move state =
             let state_mv =(play (state) (mv)) in 
               (match result state_mv with 
                 | None -> let res = match f_best_move (state_mv) with
-                            | [(b,c)] -> (Some mv,c) 
+                            | [(_,result)] -> (Some mv,result) 
                             | _ -> failwith "error" 
                     in res::aux tl 
-                | Some res -> (Some mv,res)::aux tl)
+                | Some result -> (Some mv,result)::aux tl)
   in 
   let l_possible_mv=List.filter (is_valid state) (all_moves state) in 
-  let (mv_p1,p1),(mv_p2,p2)= played_cards state in
-  let mv_sup=if (turn state)=p1 then Some (mv_p2) else Some (mv_p1) in
-  let _,b=find_max (turn state) (aux l_possible_mv) in 
-    [(mv_sup,b)];;
+  let _,result=find_max (turn state) (aux l_possible_mv) in 
+    [(Some (last_played_card state),result)];;
 
 
 let rec fold acc x = Printf.printf "===GO===\n%!" ;match x with 

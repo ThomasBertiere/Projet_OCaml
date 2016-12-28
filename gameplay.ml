@@ -36,8 +36,13 @@ let ia_move state =
 
 (*** Each player in turn. ***)
 
-let rec run with_ia state =
-	declare_workers ~n:7 "localhost" ;
+
+let run with_ia state =
+	Printf.printf "ok\n";
+	declare_workers ~n:6 "localhost" ;
+	Printf.printf "ok2\n";
+
+	let rec aux_run with_ia state =
   (* Print state & which player to play. *)
   Printf.printf "%s%!" (game2s state) ;
 
@@ -58,7 +63,8 @@ let rec run with_ia state =
               | Some mov -> play state mov
             end
         in
-          run with_ia state'
+          aux_run with_ia state' in
+	aux_run with_ia state
 
 
 let () = 

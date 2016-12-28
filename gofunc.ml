@@ -39,6 +39,7 @@ let main () =
    * You have to launch the current program (in worker mode) on these machines by yourself. *)
   declare_workers ~n:2 "localhost" ;
 
+
   let bigl = loop 100 [] in
     Printf.printf "List computed\n%!" ;
 
@@ -46,10 +47,12 @@ let main () =
        let result = map_fold_ac ~f:mymap ~fold:myfold 0 bigl in
     *)  
 
-    let result = map_fold_ac ~f:mymap ~fold:myfold [10] [1;2;3;4;5] in
+ 	let result = map_fold_ac ~f:mymap ~fold:myfold [10] [1;2;3;4;5] in
      (* Printf.printf "Computation done : result = \n%d\n%!" result ;
      *) printliste result;
-      		Printf.printf "PID du master : %d\n%!" pid ; 
+      		Printf.printf "PID du master : %d\n%!\n" pid ; 
+
+
       ()
 
 
@@ -62,8 +65,7 @@ let () =
     (* If there is one argument equal to "master" *)
     | [| _ ; "master" |] -> 
         Printf.printf "I am the master.\n%!" ;
-        main ()
-
+        main ();
     (* Otherwise, we are a worker. *)
     | _ -> 
         Printf.printf "I am a worker.\n%!" ;

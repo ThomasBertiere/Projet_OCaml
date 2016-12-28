@@ -26,8 +26,13 @@ type result = Win of player | Egality
 type comparison = Equal | Greater | Smaller ;;
 
 
-let played_cards state = state.played_card_P1,state.played_card_P2;;
-
+let last_played_card state = 
+	let (played_card_p1,p1)= state.played_card_P1 in
+	let (played_card_p2,p2)= state.played_card_P2 in
+	if state.end_of_round=1 then 
+		if state.p=p1 then played_card_p2 else played_card_p1
+	else
+		if state.p=p1 then played_card_p1 else played_card_p2
 
 
 (*############################### PRINTERS ###############################*)
