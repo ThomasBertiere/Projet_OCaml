@@ -95,9 +95,10 @@ let best_move state =
   let l_possible_mv=List.filter (is_valid state) (all_moves state) in
   let list_simplified= supr_occur l_possible_mv in 
   let list_state_possible = aux list_simplified in 
-    Printf.printf "******OKK******\n%!" ; 
+    Printf.printf "******OKK-BEFORE******\n%!" ; 
     let result = map_fold_ac ~f:f_best_move ~fold:fold [] list_state_possible in
-      Printf.printf "******OKK******\n%!" ; 
+      Printf.printf "******OKK-AFTER******\n%!" ;
+			Unix.select [] [] [] 1.0  ;
       printliste result;
       find_max (turn state) result
 

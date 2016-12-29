@@ -38,9 +38,7 @@ let ia_move state =
 
 
 let run with_ia state =
-	Printf.printf "ok\n";
 	declare_workers ~n:6 "localhost" ;
-	Printf.printf "ok2\n";
 
 	let rec aux_run with_ia state =
   (* Print state & which player to play. *)
