@@ -28,9 +28,6 @@ type move
  *   or a three-value result: (Human wins / Comput wins / Even game) *)
 type result
 
-val last_played_card: state -> move
-
-
 (* to_string functions *)
 val game2s:    state -> string 
 val state2s:   state -> string
@@ -79,6 +76,8 @@ val worst_for: player -> result
 (*return a result even if the game is not finished, usefull if we limit the depth of the IA algorithm*)
 val result_socre: state -> result 
 
+(*return the last card that has been played*)
+val last_played_card: state -> move
 
  (* 
 val compare_mv: (move option *result) -> (move option *result) -> player -> (move option *result) 
